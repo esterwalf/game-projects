@@ -1,0 +1,216 @@
+<html>
+
+<head>
+    <title>
+        balloon
+    </title>
+    <style>
+        @font-face {
+            font-family: 'Contrail One';
+            font-style: normal;
+            font-weight: 400;
+            src: local('Contrail One'), local('ContrailOne-Regular'), url(https://fonts.gstatic.com/s/contrailone/v9/eLGbP-j_JA-kG0_Zo51noaftYkHs.woff2) format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+        body {
+            background-image: url("./src/beach.png");
+            background-repeat: no-repeat;
+            width: 800px;
+            height: 900px;
+        }
+
+        #main-wrapper {
+            position: relative;
+            margin: 0 auto;
+            width: 480px;
+            height: 800px;
+            background-image: url("./src/beach.png");
+            background-repeat: no-repeat;
+        }
+
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 480px;
+            height: 800px;
+            overflow: hidden;
+            background-image: url("./src/beach.png");
+            background-repeat: no-repeat;
+        }
+
+        #score-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-family: 'Contrail One', cursive;
+            font-size: 30px;
+            color: #fff;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        #start-btn {
+            position: absolute;
+            background: greenyellow;
+            color: darkgreen;
+            font-family: 'Contrail One', cursive;
+            font-size: 30px;
+            padding: 3px 10px;
+            border-radius: 10px;
+            text-shadow: 1px 1px 0 #A35906;
+            border: 4px solid #fff;
+            cursor: pointer;
+            top: 400px;
+            left: 50%;
+            margin-left: -40px;
+            display: nonea;
+            box-shadow: 0 0 20px rgba(221, 188, 188, 0.5);
+        }
+
+        .balloonGreen {
+            position: absolute;
+            width: 40px;
+            height: 53px;
+            background-image: url("./src/greenBalloon.png");
+        }
+        .balloonBlue {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background-image: url("./src/blueBalloon.png");
+        }
+
+        .balloonRed {
+            position: absolute;
+            width: 40px;
+            height: 53px;
+            background-image: url("./src/redBalloon.png");
+
+        }
+    </style>
+    <script type="text/javascript">
+        function Game() {
+            this.isPaused = true;
+            this.score = null;
+            this.speed = null;
+            this.density = null;
+            this.remainingLives = 5;
+            this.playElement = document.getElementById('start-btn');
+            this.scoreElement = document.getElementById('score-container');
+            this.livesElement = document.getElementById('lives-container');
+            this.canvasElement = document.getElementById('canvas');
+            this.timer = null;
+            this.startedTime = null; //time from start game
+            this.intervalId = null;
+            this.updateTime = null;
+            this.densityStep = null;
+            this.balloonsArray = null;
+            var that = this;
+            this.updater = function () {
+                that.updateGame();
+            };
+        }
+        Game.prototype.startGame = function () {
+            this.playElement.style.display = "none";
+            this.intervalId = setInterval(this.updater, this.updateTime);
+
+        };
+        Game.prototype.pauseGame = function () {
+            clearInterval(this.intervalId);
+        };
+        Game.prototype.updateScore = function (score) {
+            this.scoreElem.innerHTML = score;
+        };
+        Game.prototype.updateGame = function () {
+            this.densityStep += this.density;
+            if (this.densityStep >= 1 && this.balloonsArray.length < 30) {
+                for (var i = 0; i < parseInt(this.densityStep, 10); i++) {
+                    var tempBalloon = new Balloon(0, -53, 'normal', 50);
+                    tempBalloon.positionX = tempBalloon.generateRandomXPos();
+                    console.log(tempBalloon && tempBalloon.color);
+                    var el = document.createElement('div');
+                    el.className = 'balloon' + tempBalloon.color;
+                    el.style.left = tempBalloon.positionX + 'px';
+                    el.style.bottom = tempBalloon.positionY + 'px';
+                    var thiz = this;
+                    var index = this.balloonsArray.length;
+                    el.onclick = function () {
+                        thiz.score += thiz.balloonsArray[index].points;
+                        thiz.updateScore(thiz.score);
+                        this.parentNode.removeChild(el);
+                    };
+                    this.canvasElement.appendChild(el);
+                    var tempObj = {};
+                    tempObj.el = el;
+                    tempObj.speed = tempBalloon.getRandomSpeed();
+                    tempObj.points = tempBalloon.points;
+                    this.balloonsArray.push(tempObj);
+                    //console.log(tempObj.speed);
+                }
+                this.densityStep = 0;
+            }
+            for (var i = 0; i < this.balloonsArray.length; i++) {
+                this.balloonsArray[i].el.style.bottom = (parseInt(this.balloonsArray[i].el.style.bottom, 10) + (3 + this.balloonsArray[i].speed)) + 'px';
+            }
+        };
+        Game.prototype.endGame = function () {
+
+        };
+        Game.prototype.initGame = function () {
+            this.isPaused = true;
+            this.score = 0;
+            this.speed = 0.04;
+            this.density = 1000 / 4000;
+            this.remainingLives = 5;
+            this.updateTime = 50;
+            this.densityStep = 1;
+            this.balloonsArray = [];
+            this.scoreElem = document.getElementById('score-count');
+
+        };
+        function Balloon(x, y, type, points) {
+            this.positionX = x;
+            this.positionY = y;
+            this.type = type;
+            this.points = points;
+            balloonColors = []
+            balloonColors[0] = 'Blue';
+            balloonColors[1] = 'Green';
+            balloonColors[2] = 'Red';
+            var chosenColorIndex = Math.floor(Math.random() * 3);
+            this.color = balloonColors[chosenColorIndex];
+            return this;
+        }
+        Balloon.prototype.getRandomSpeed = function () {
+            return Math.floor(Math.random() * 201) / 100;
+        };
+        Balloon.prototype.generateRandomXPos = function () {
+            return Math.floor(Math.random() * 450);
+        };
+
+        window.addEventListener('load', function () {
+            var a = new Game();
+            a.initGame();
+            document.getElementById('start-btn').onclick = function () {
+                a.startGame();
+            };
+        });
+    </script>
+</head>
+
+<body>
+    <div id="main-wrapper">
+        <div id="canvas">
+        </div>
+        <div id="score-label">
+            Score: <span id="score-count">0</span>
+        </div>
+        <div id="start-btn">
+            <span>Play</span>
+        </div>
+        <div id="pause-btn">
+        </div>
+</body>
+
+</html>
