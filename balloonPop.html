@@ -1,0 +1,90 @@
+<html>
+
+<head>
+    <title>
+        red ball
+    </title>
+    <script type="text/javascript" src="./src/ballbasic.js"></script>
+    <script type="text/javascript">
+
+        var hand;
+        var scene;
+        var beach;
+        var joystick;
+        var balloons = [];
+
+        function init() {
+            scene = new Scene();
+            beach = new Sprite(scene, "./src/beach.png", 600, 400);
+            hand = new Sprite(scene, "./src/hand.png", 40, 40)
+            hand.setPosition(100, 100);
+            hand.setMoveAngle(180);
+            hand.setSpeed(7);
+            beach.setSpeed(0, 0);
+            beach.setPosition(400, 300);
+            scene.hideCursor();
+            initBalloons();
+            if (scene.touchable) {
+                joystick = new Joy();
+            }
+            scene.start();
+        }
+        function initBalloons() {
+            for (i = 0; i < 10; i++) {
+                assetName = getBalloonRand();
+                newX = Math.random() * beach.cWidth;
+                newY = Math.random() * beach.cHeight;
+                balloons[i] = new Sprite(scene, assetName, 40, 40);
+                balloons[i].setSpeed(8);
+                balloons[i].setPosition(newX, newY);
+            }
+        }
+        function update() {
+            scene.clear();
+            beach.update();
+            hand.update();
+            followMouse();
+            tBall();
+            reset();
+            updateBalloons();
+
+        }
+        function updateBalloons() {
+            for (i = 0; i < 10; i++) {
+                balloons[i].update();
+            }
+        }
+        function followMouse() {
+            x = scene.getMouseX();
+            y = scene.getMouseY();
+
+            if (scene.touchable) {
+                jx = joystick.getMouseX();
+                jy = joystick.getMouseY();
+                jdx = joystick.getDiffX();
+                jdy = joystick.getDiffY();
+
+                result = "joystick x:" + jx + "<br/>";
+                result += "joystick y:" + jy + "<br/>";
+                result += "joystick dx:" + jdx + "<br/>";
+                result += "joystick dy:" + jdy + "<br/>";
+                output.innerHTML = result;
+            }
+            hand.setPosition(x, y);
+        }  
+        function getBalloonRand() {
+            var balloonColors = []
+            balloonColors[0] = "./src/redBalloon.png";
+            balloonColors[1] = "./src/blueBalloon.png";
+            balloonColors[2] = "./src/greenBalloon.png";
+            var chosenColorIndex = Math.floor(Math.random() * 3);
+            return balloonColors[chosenColorIndex];
+        }
+
+    </script>
+</head>
+
+<body onload="init()">
+</body>
+
+</html>
